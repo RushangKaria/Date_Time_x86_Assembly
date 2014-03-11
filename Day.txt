@@ -1,0 +1,127 @@
+
+;
+;	------------[#]----CORE LOGIC----[#]------------
+;			    
+;			INT 21H AH=2AH
+;		year=CX
+;		month=DH
+;		day=DL
+;		day_of_the_week=AL  { Monday is considered as 01H Sunday as 07H }
+;	
+;	[###############################################]
+
+;[*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*][*]
+
+;---------------------------------------------------------------------------------------
+
+Data Segment
+
+Text1 DB "The day of the week is  $"
+
+	Monday DB "Monday$"
+	Tuesday DB "Tuesday$"
+	Wednesday DB "Wednesday$"
+	Thursday DB "Thursday$"
+	Friday DB "Friday$"
+	Saturday DB "Saturday$"
+	Sunday DB "Sunday$"
+
+
+Data Ends 
+
+Code Segment
+
+	start: ASSUME DS:Data,CS:Code
+
+	MOV AX,Data
+	MOV DS,AX
+
+
+	Printer MACRO Text
+
+		MOV AH,09H
+		LEA DX,Text
+		INT 21H
+
+	ENDM
+
+
+
+
+		MOV AH,2AH
+		INT 21H
+
+	
+	Printer Text1
+	CALL Checker
+
+
+
+
+
+;-----House Cleaning and a smooth exit------
+
+	MOV AX,4C00H
+	INT 21H
+;------------------------------------------		
+
+Code ends
+end start
+
+;#############################################PROCEDURES SEGMENT#######################################################
+
+Procedures Segment
+
+
+;:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+		Checker PROC FAR
+
+		ASSUME CS:Procedures
+
+			CMP AL,01H
+			JZ M
+
+			CMP AL,02H			;we compare the day of the week in AL
+			JZ T				;and accordingly print the day
+							;since then the task is done
+							;RET statements are necessary
+			CMP AL,03H			;else all dates get printed
+			JZ W				;(*) try removing all the RET and see
+
+			CMP AL,04H
+			JZ Th
+
+			CMP AL,05H
+			JZ F
+		
+			CMP AL,06H
+			JZ S
+
+			Printer Sunday					
+			RETF					;CMP AL,07H these are not reqd since the day
+								;is Sunday if all else fails
+
+			M:   Printer Monday
+			     RETF
+			T:   Printer Tuesday	
+			     RETF
+			W:   Printer Wednesday
+			     RETF
+			Th:  Printer Thursday
+			     RETF
+			F:   Printer Friday
+			     RETF
+			S:   Printer Saturday
+			     RETF
+			
+
+			RETF
+		Checker ENDP
+;:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+Procedures Ends
+
+;######################################################################################################################
+
+
